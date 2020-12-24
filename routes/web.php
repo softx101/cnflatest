@@ -21,6 +21,7 @@ Route::resource('/agents', 'App\Http\Controllers\AgentController');
 Route::resource('/ie_datas', 'App\Http\Controllers\IeDataController');
 
 Route::resource('/file_datas', 'App\Http\Controllers\FileDataController');
+Route::resource('/gfiles', 'App\Http\Controllers\GfileController');
 //Route::any('/file_edit/{file_data}', 'App\Http\Controllers\FileDataController@file_edit');
 Route::any('/file_list', 'App\Http\Controllers\FileDataController@file_list');
 

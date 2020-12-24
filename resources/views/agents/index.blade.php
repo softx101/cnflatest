@@ -38,7 +38,7 @@
 
                     <th>{{++$i}} </th>
                     <td>{{$agent->ain_no}}</td>
-                    <td>{{$agent->name}}</td>
+                    <td>{{ $agent->name ?? null }}</td>
                     <td>{{$agent->owners_name}}</td>
                     <td><a target="_blank" href="/{{$agent->photo}}"><img src="/{{$agent->photo}}" alt="" width="40"></a></td>
                     <td>{{$agent->destination}}</td>

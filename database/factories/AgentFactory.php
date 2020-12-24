@@ -23,22 +23,7 @@ class AgentFactory extends Factory
     {
 
 
-        /*
- $table->id();
-            $table->string('ain_no');
-            $table->string('name');
-            $table->string('owners_name')->nullable();
-            $table->string('photo')->nullable();
-            $table->string('destination')->nullable();
-            $table->string('office_address')->nullable();
-            $table->string('phone');
-            $table->string('house')->nullable();
-            $table->string('email');
-            $table->text('note')->nullable();
-            $table->timestamps();
 
-
-        */
         return [
             'ain_no' => $this->faker->unique()->numberBetween(1000, 5000),
             'name' => $this->faker->name,

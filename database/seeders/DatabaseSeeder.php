@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
 
 
         $this->call(LaratrustSeeder::class);
-        
+
        $users= \App\Models\User::factory(10)->create();
        $users->each(function($user){
             $user->attachRole('operator');
@@ -24,5 +24,6 @@ class DatabaseSeeder extends Seeder
        \App\Models\Agent::factory(100)->create();
        \App\Models\Ie_data::factory(100)->create();
        \App\Models\File_data::factory(500)->create();
+       \App\Models\Gfile::factory(500)->create();
     }
 }
