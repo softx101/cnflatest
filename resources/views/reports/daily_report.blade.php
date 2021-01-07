@@ -2,8 +2,10 @@
 
 @section('content')
 
+    @if($file_datas->isNotEmpty() )
+
     <h2 id="tr" class="text-center">Daily Report</h2>
-    <div class="card-header d-none">
+    <div class="card-header">
         <form action = "" >
             <div class="form-row">
                 <div class="col-2 d-flex align-items-center">
@@ -51,8 +53,8 @@
         @foreach($file_datas as $file_data)
         <tr>
             <td>{{$file_data->id}}</td>
-            <td>{{$file_data->be_date}}</td>
-            <td>{{$file_data->ie_data['name']}}</td>
+            <td>{{ ( $file_data->operator->name ) ?? null }}</td>
+            <td>{{ ( $file_data->ie_data->name ) ?? null }}</td>
             <td>{{$file_data->agent->name}}</td>
             <td>{{$file_data->be_number}}</td>
             <td>{{$file_data->be_date}}</td>
@@ -84,6 +86,14 @@
         </tr>
         </tfoot>
     </table>
+
+    @else
+    <h2 class="text-center">No Data Found</h2>
+<p class="mt-2 text-center">
+    <a class="btn btn-sm btn-info" href="/file_datas/create">Receive a new file</a>
+</p>
+    @endif
+
 @endsection
 
 

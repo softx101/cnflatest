@@ -87,4 +87,7 @@ Route::resource('/users', 'App\Http\Controllers\UserController');
 Route::resource('/salary', 'App\Http\Controllers\SalaryController');
 
 
+Route::get('/work_report_per_day/{day?}', 'App\Http\Controllers\Report@work_report_per_day')->name('work_report_per_day');
+Route::post('/get_work_report', 'App\Http\Controllers\Report@get_work_report')->name('get_work_report');
+
 

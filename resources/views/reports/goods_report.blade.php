@@ -140,7 +140,7 @@
                                 return meta.row + meta.settings._iDisplayStart + 1;
                             }
                         },
-                        { data: 'note', name: 'note' },
+                     //   { data: 'note', name: 'note' },
                         { data: 'date', name: 'date' },
                         { data: 'total', name: 'total', className: 'sum' },
                         { data: 'Parisiable', name: 'Parisiable', className: 'sum' },

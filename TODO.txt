@@ -1,0 +1,18 @@
+Axios:
+
+1. select target field with id.
+
+2. grab value.
+
+// pattern:
+namess
+_bin
+
+split
+(")
+
+
+///next
+URL: post reqeust : route endpoint
+
+"name" 

@@ -21,4 +21,8 @@ class File_data extends Model
         return $this->hasMany(Data_user::class) ;
     }
 
+    public function operator(){
+        return $this->belongsTo(User::class);
+    }
+
 }

@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class Report extends Controller
 {
@@ -179,11 +180,15 @@ class Report extends Controller
          return view('reports.daily_summary',compact('total_file','total_amount'));
     }
 
+
+
     public function daily_report()
     {
 
 
-         $file_datas = File_data::where('status','<>','Received')->whereDate('created_at',Carbon::today())->with('ie_data')->with('agent')->with('data_users')->get();
+  //       $file_datas = File_data::where('status','<>','Received')->whereDate('created_at',Carbon::today())->with('ie_data')->with('agent')->with('data_users')->get();
+       $file_datas = File_data::with(['ie_data','agent','operator'])->whereDate('created_at',Carbon::today())->where('status', '<>', 'Received')->get();
+     //    $file_datas = File_data::with(['ie_data','agent','operator'])->where('status', '<>', 'Received')->get();
 
         $total_file = count($file_datas);
         $total_amount = 0;
@@ -202,7 +207,8 @@ class Report extends Controller
     public function get_daily_report(Request $request)
     {
 
-//        return Data_user::with('file_data')->with('user')->get();
+        // $file_datas = File_data::with(['ie_data','agent','operator'])->whereDate('created_at',Carbon::today())->where('status', '<>', 'Received')->get();
+    //    return Data_user::with('file_data')->with('user')->get();
         if (request()->ajax()) {
             if (!empty($request->from_date)) {
 
@@ -329,6 +335,44 @@ class Report extends Controller
 
 
 
+    public function work_report_per_day( $date = "2020-12-21")
+    {
+        $i = 1;
+        $users = User::get();
+        $agents = Agent::pluck('name', 'id');
+        $date = !empty($date) ? $date : date('Y-m-d');
+
+
+        $work_sheet = DB::table('file_datas')
+            ->selectRaw(
+                'users.`name`,
+            SUM( IF(file_datas.page = 1,1,0) ) AS item_1,
+            SUM( IF(file_datas.page BETWEEN 2 AND 4,1,0) ) AS item_2_4,
+            SUM( IF(file_datas.page BETWEEN 5 AND 7,1,0) ) AS item_5_7,
+            SUM( IF(file_datas.page BETWEEN 8 AND 9,1,0) ) AS item_8_9,
+            SUM( IF(file_datas.page >= 10 ,1,0) ) AS item_10,
+            SUM(file_datas.page) AS TotalItem,
+            SUM(file_datas.no_of_pages) AS total_pages'
+            )
+            ->whereDate('lodgement_date', '=', $date)
+            ->groupBy('users.name')
+            ->join('users', 'users.id', '=', 'file_datas.operator_id')
+            ->get();
+       // return $work_sheet;
+
+        // if ($work_sheet != 0) {
+        //     # code...
+        // }
+         //   return  $date;
+        return view('reports.work_report', compact('i', 'work_sheet'));
+    }
+
+    public function get_work_report(Request $request)
+    {
+
+        return $this->work_report_per_day($request->target_date);
+    }
+
 
     public function goods_report()
     {
@@ -339,7 +383,12 @@ class Report extends Controller
     }
 
     public function get_goods_report(Request $request)
+
     {
+
+
+
+
         if (request()->ajax()) {
             if (!empty($request->from_date)) {
                 $startdate = $request->from_date;
