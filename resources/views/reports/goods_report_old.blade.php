@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <h2 id="tr" class="text-center">Operated File Report</h2>
+    <h2 id="tr" class="text-center">Assessment Report Per Day</h2>
     <div class="card-header">
         <form action = "" >
             <div class="form-row">
@@ -10,7 +10,7 @@
                     <strong class="card-title m-0">All Available Report</strong>
                 </div>
                 <div class="col-md-1 d-flex align-items-center justify-content-end">
-                    <lable>Date</lable>
+                    <label>Date(Lodgement)</label>
                 </div>
                 <div class="col-5">
                     <div id="reportrange" style="background: #fff; cursor: pointer; padding: 4px 20px; border: 1px solid #ccc; width: 100%">
@@ -25,7 +25,7 @@
                 </div>
 
                 <div class="col ">
-                    {{Form::select('agent_id', $agents, null, ['id' => 'agent_id', 'class' => 'select2_op form-control','placeholder' => 'Select Agent', 'required'])}}
+{{--                    {{Form::select('agent_id', $agents, null, ['id' => 'agent_id', 'class' => 'select2_op form-control','placeholder' => 'Select Agent', 'required'])}}--}}
                 </div>
 
                 <div class="col text-center">
@@ -40,22 +40,40 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>Operator Name</th>
-                <th>Lodgement No</th>
-                <th>Manifest No</th>
-                <th>Page</th>
-                <th>Status</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Total File</th>
+                <th>Perishable </th>
+                <th>Wating G.F </th>
+                <th>(T - P)</th>
+                <th>{(T - P) - W.G.F}</th>
+                <th>%</th>
             </tr>
         </thead>
-
+        @foreach($assReport as $goodreport)
+        <tr>
+            <td>{{$i++}}</td>
+            <td>{{$goodreport['name']}}</td>
+            <td>{{$goodreport['lodgement_date']}}</td>
+            <td>{{$goodreport['totalFiles']}}</td>
+            <td>{{$goodreport['TotalPerishable']}}</td>
+            <td>{{$goodreport['Waiting_G_F']}}</td>
+            <td>{{$goodreport['tp']}}</td>
+            <td>{{$goodreport['tpwgf']}}</td>
+            <td>{{$goodreport['prsnt']}}</td>
+        </tr>
+        @endforeach
         <tfoot>
         <tr>
             <th>No</th>
-            <th>Operator Name</th>
-            <th>Lodgement No</th>
-            <th>Manifest No</th>
-            <th>Page</th>
-            <th>Status</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Total File</th>
+            <th>Perishable </th>
+            <th>Wating G.F </th>
+            <th>(T - P)</th>
+            <th>{(T - P) - W.G.F}</th>
+            <th>%</th>
         </tr>
         </tfoot>
     </table>
@@ -68,6 +86,7 @@
     <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.20/filtering/row-based/range_dates.js"></script>
 
     <script !src="">
+        // load_data();
         // date rang picker
         $(function() {
             var start = moment().subtract(29, 'days');
@@ -105,25 +124,26 @@
             function load_data(from_date = '', to_date = '', agent_id = '')
             {
                 $('#all_report').DataTable({
+
                     processing: true,
                     serverSide: true,
                     dom: 'lBftip',
                     buttons: [
                         {
                             extend: 'pdf',
-                            messageTop: 'Operated File Report',
+                            messageTop: 'File Report',
                             footer: true
                         },
                         'csv',
                         'excel',
                         {
                             extend: 'print',
-                            messageTop: '<h2>File Operated File Report ' +customer_name+ '</h2>',
+                            messageTop: '<h2>File Report ' +customer_name+ '</h2>',
                             footer: true
                         }
                     ],
                     ajax: {
-                        url:'{!! route("get_data_entry") !!}',
+                        url:'{!! route("get_goods_report") !!}',
                         data:{from_date:from_date, to_date:to_date, agent_id:agent_id}
                     },
                     columns: [
@@ -133,11 +153,14 @@
                                 return meta.row + meta.settings._iDisplayStart + 1;
                             }
                         },
-                        { data: 'operator.name', name: 'operator.name'},
-                        { data: 'lodgement_no', name: 'lodgement_no' },
-                        { data: 'manifest_no', name: 'manifest_no' },
-                        { data: 'page', name: 'page' },
-                        { data: 'status', name: 'status' },
+                        { data: 'name', name: 'name' },
+                        { data: 'lodgement_date', name: 'lodgement_date' },
+                        { data: 'totalFiles', name: 'totalFiles', className: 'sum' },
+                        { data: 'TotalPerishable', name: 'TotalPerishable', className: 'sum' },
+                        { data: 'Waiting_G_F', name: 'Waiting_G_F', className: 'sum' },
+                        { data: 'tp', name: 'tp', className: 'sum' },
+                        { data: 'tpwgf', name: 'tpwgf', className: 'sum' },
+                        { data: 'prsnt', name: 'prsnt', className: 'sum' }
                     ],
 
                     "footerCallback": function(row, data, start, end, display) {
@@ -167,11 +190,12 @@
                 var agent_id = $("#agent_id option:selected").val();
 
                 if (agent_id != ''){
-                    customer_name = '-'+ $("#agent_id option:selected").text();
-                    document.getElementById("tr").innerHTML = 'Operated File Report'+customer_name;
+                    // customer_name = '-'+ $("#agent_id option:selected").text();
+                    customer_name = '';
+                    document.getElementById("tr").innerHTML = 'Assessment Report Per Day'+customer_name;
                 }else {
                     customer_name = '';
-                    document.getElementById("tr").innerHTML = 'Operated File Report'+customer_name;
+                    document.getElementById("tr").innerHTML = 'Assessment Report Per Day'+customer_name;
                 }
 
 
@@ -192,7 +216,7 @@
                 $("#agent_id").select2().val('').trigger("change");
                 $('#all_report').DataTable().destroy();
                 customer_name = '';
-                document.getElementById("tr").innerHTML = 'Operated File Report '+customer_name;
+                document.getElementById("tr").innerHTML = 'Assessment Report Per Day '+customer_name;
                 load_data();
             });
 

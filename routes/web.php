@@ -62,7 +62,7 @@ Route::get('/get_export_report', 'App\Http\Controllers\Report@get_export_report'
 
 
 Route::get('/goods_report', 'App\Http\Controllers\Report@goods_report');
-Route::get('/get_goods_report', 'App\Http\Controllers\Report@get_goods_report')->name('get_goods_report');
+// Route::get('/get_goods_report', 'App\Http\Controllers\Report@get_goods_report')->name('get_goods_report');
 
 
 

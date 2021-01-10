@@ -9,6 +9,7 @@ use App\Models\Goods_report;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 
@@ -133,9 +134,9 @@ class Report extends Controller
     {
 
 
-        $i = 0;
-        $users = User::where('id','!=','1')->pluck('name','id');
-        return view('reports.data_entry',compact('users','i'));
+      //  $i = 0;
+        $agents = Agent::pluck('name','id');
+        return view('reports.data_entry',compact('agents'));
     }
 
     public function get_data_entry(Request $request)
@@ -152,9 +153,9 @@ class Report extends Controller
 
                 $query = 'date(lodgement_date) between "' . $startdate . '" AND "' . $enddate . '"';
                 if ($agent_id == ''){
-                    $file_datas = File_data::whereRaw($query)->where('status','!=','Received')->with('agent')->with('ie_data')->get();
+                    $file_datas = File_data::whereRaw($query)->where('status','!=','Received')->with('operator')->with('agent')->with('ie_data')->get();
                 }else {
-                    $file_datas = File_data::whereRaw($query)->where('status','!=','Received')->where('agent_id',$request->agent_id)->with('agent')->with('ie_data')->get();
+                    $file_datas = File_data::whereRaw($query)->where('status','!=','Received')->where('agent_id',$request->agent_id)->with('operator')->with('agent')->with('ie_data')->get();
                 }
 
             } else {
@@ -162,7 +163,7 @@ class Report extends Controller
 //              $sales_date = Trip::orderBy('id', 'desc')->get();
 //              $file_datas = File_data::with('agent')->with('ie_data')->get();
 
-                $file_datas = Data_user::with('file_data')->with('user')->get();
+                $file_datas = File_data::where('status','!=','Received')->with('operator')->with('agent')->with('ie_data')->get();
             }
             return DataTables::of($file_datas)->make(true);
         }
@@ -314,6 +315,7 @@ class Report extends Controller
     }
     public function get_monthly_final_report(Request $request)
     {
+
         if (request()->ajax()) {
             if (!empty($request->from_date)) {
                 $startdate = $request->from_date;
@@ -374,38 +376,48 @@ class Report extends Controller
     }
 
 
-    public function goods_report()
+    //monthly asesment report with gf ==================================start
+    public function goods_report(Request $request)
     {
-         $i = 0;
-//        $file_datas = File_data::get();
-        $agents = Agent::pluck('name','id');
-        return view('reports.goods_report',compact('agents','i'));
+        $i = 0;
+        $startDate = Carbon::now(); //returns current day
+        $first =$request->from_date ?? "2020-12-01";
+        $last = $request->to_date ?? "2020-12-31";
+        $name=null;
+
+        $assReportQ = DB::table('file_datas')
+            ->selectRaw(
+                'users.`name`,
+                file_datas.lodgement_date,
+                SUM(file_datas.page) AS totalFiles,
+                SUM( IF(file_datas.goods_type = "Perishable" ,1,0) ) AS TotalPerishable,
+               IFNULL( (SELECT gfiles.waitingGreenFile FROM gfiles WHERE gfiles.assesmentDate = file_datas.lodgement_date LIMIT 1 ), 0) as Waiting_G_F'
+            )
+            ->whereBetween('lodgement_date', [  $first, $last])
+            ->groupBy('users.name', 'file_datas.lodgement_date')
+            ->join('users', 'users.id', '=', 'file_datas.operator_id')
+            ->orderBy('users.name', "asc")
+            ->get();
+
+
+        $reportItems = $assReportQ->map(function($item){
+
+            $tp = $item->totalFiles - $item->TotalPerishable;
+            $tpgf = $tp -  $item->Waiting_G_F;
+            $percentage = round( ( $tpgf * 100) / $item->totalFiles, 2 );
+                 return    collect($item)->merge(['tp' =>$tp, 'tpgf' => $tpgf, 'percentage' => $percentage]);
+        });
+
+
+
+//        return $reportItems;
+
+
+       return view('reports.goods_report', compact('reportItems', 'i', 'name'));
+        // return DataTables::of($assReport)->make(true);
     }
 
-    public function get_goods_report(Request $request)
 
-    {
-
-
-
-
-        if (request()->ajax()) {
-            if (!empty($request->from_date)) {
-                $startdate = $request->from_date;
-                $enddate = $request->to_date;
-//                $agent_id = $request->agent_id;
-
-                $query = 'date(date) between "' . $startdate . '" AND "' . $enddate . '"';
-                    $file_datas = Goods_report::whereRaw($query)->get();
-
-            } else {
-//              $sales_date = Trip::orderBy('id', 'desc')->get();
-//                $file_datas = File_data::with('agent')->with('ie_data')->get();
-                $file_datas = Goods_report::get();
-            }
-            return DataTables::of($file_datas)->make(true);
-        }
-    }
 
 
 
